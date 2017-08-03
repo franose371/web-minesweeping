@@ -31,13 +31,9 @@ var MineSweeping = {
 		document.body.appendChild(mineCanvas);
 
 		if (mineCanvas.getContext("2d")) {
-
 			var mineContext = mineCanvas.getContext("2d");
-
 		} else {
-
 			alert("浏览器不兼容");
-
 		}
 
 		//背景填充
@@ -48,24 +44,28 @@ var MineSweeping = {
 		var xIndex = [];
 		var yIndex = [];
 		var positions = [];
+		var minepositions = [];
+		//生成所有可能的坐标索引
 		for (let i = 0; i < 30; i++) {
-			xIndex.push(i);
-		}
-		for (let i = 0; i < 16; i++) {
-			yIndex.push(i);
+			for (let j = 0; j < 16; j++) {
+				positions.push({
+					x: i,
+					y: j
+				});
+			}
 		}
 
-		for (let i = 0; i < this.mine_num; i++) {
-			var randomX = xIndex[Math.floor(Math.random() * 30)];
-			var randomY = yIndex[Math.floor(Math.random() * 16)];
-			positions.push({
-				x: randomX,
-				y: randomY
-			});
+		//在所有可能的坐标中选出99个不重复的坐标
+		while (minepositions.length < 99) {
+			let index = Math.floor(Math.random() * positions.length);
+			let position = positions[index];
+			minepositions.push(position);
+			positions.splice(index, 1);
 		}
-		for (let i = 0; i < positions.length; i++) {
+
+		for (let i = 0; i < minepositions.length; i++) {
 			mineContext.fillStyle = "red"; //填充样式演示
-			mineContext.fillRect(positions[i].x * 20, positions[i].y * 20, this.block_width, this.block_height); //绘制矩形
+			mineContext.fillRect(minepositions[i].x * 20, minepositions[i].y * 20, this.block_width, this.block_height); //绘制矩形
 		}
 	},
 
@@ -78,7 +78,6 @@ var MineSweeping = {
 		maskCanvas.width = '600';
 		maskCanvas.height = '320';
 		maskCanvas.style.border = '1px solid #aaa';
-		//maskCanvas.style.display = 'block';
 		maskCanvas.style.position = 'absolute'
 		maskCanvas.style.top = 0;
 		maskCanvas.style.left = 0;
@@ -86,20 +85,16 @@ var MineSweeping = {
 		document.body.appendChild(maskCanvas);
 
 		if (mineCanvas.getContext("2d")) {
-
 			var maskContext = maskCanvas.getContext("2d");
-
 		} else {
-
 			alert("浏览器不兼容");
-
 		}
 
 		maskContext.fillStyle = "black";
 		maskContext.strokeStyle = 'gray'
 		maskContext.lineWidth = 1; //边框宽度
-		for (let x = 0; x < 600; x = x + 20) {
-			for (let y = 0; y < 320; y = y + 20) {
+		for (let x = 0; x < 600; x = x + BLOCK_WIDTH) {
+			for (let y = 0; y < 320; y = y + BLOCK_HEIGHT) {
 				maskContext.fillRect(x, y, BLOCK_WIDTH, BLOCK_HEIGHT);
 				maskContext.strokeRect(x, y, BLOCK_WIDTH, BLOCK_HEIGHT)
 			}
