@@ -4,28 +4,27 @@ var MineSweeping = {
 	block_height: 20,
 	mines: [],
 	cleanArr: [],
-	cleanArea: function(columns, rows) {
+	count: 0,
+	cleanArea: function(columns, rows, mineObject) {
 		for (let k = -1; k < 2; k++) {
 			for (let l = -1; l < 2; l++) {
-				if (columns + l > -1 && rows + k > -1 && columns + l < 30 && rows + k < 16) {
-					if (l !== 0 && k !== 0) {
-						MineSweeping.cleanArr.push({
-							columns: columns + k,
-							rows: rows + l
-						});
-						//maskContext.clearRect((index.xIndex + k) * BLOCK_WIDTH, (index.yIndex + l) * BLOCK_HEIGHT, BLOCK_WIDTH - 1, BLOCK_HEIGHT - 1);
-						if (mines[columns + l][rows + k].roundMines === 0) {
-							MineSweeping.cleanArea(columns + l, rows + k);
-						}
+				if (columns + l > -1 && rows + k > -1 && columns + l < 30 && rows + k < 16 && mines[columns + l][rows + k].isClicked === false) {
+					mineObject.cleanArr.push({
+						columns: columns + l,
+						rows: rows + k
+					});
+					mines[columns + l][rows + k].isClicked = true;
+					mineObject.count++;
+					if (mines[columns + l][rows + k].roundMines === 0) {
+						mineObject.cleanArea(columns + l, rows + k, mineObject);
 					}
 				}
 			}
 		}
-		return MineSweeping.cleanArr;
 	},
-	getMineIndex: function(x, y) {
-		xIndex = Math.floor(x / MineSweeping.block_width);
-		yIndex = Math.floor(y / MineSweeping.block_height);
+	getMineIndex: function(x, y, mineObject) {
+		xIndex = Math.floor(x / mineObject.block_width);
+		yIndex = Math.floor(y / mineObject.block_height);
 		return {
 			xIndex: xIndex,
 			yIndex: yIndex
@@ -66,8 +65,8 @@ var MineSweeping = {
 		}
 
 		//背景填充
-		// mineContext.fillStyle = "gray";
-		// mineContext.fillRect(0, 0, 600, 320);
+		mineContext.fillStyle = "gray";
+		mineContext.fillRect(0, 0, 600, 320);
 
 
 		var xIndex = [];
@@ -114,8 +113,8 @@ var MineSweeping = {
 				for (let k = -1; k < 2; k++) {
 					for (let l = -1; l < 2; l++) {
 						if (i + l > -1 && j + k > -1 && i + l < 30 && j + k < 16) {
-								if (mines[i + l][j + k].isMined === true) {
-									mineNum++;
+							if (mines[i + l][j + k].isMined === true) {
+								mineNum++;
 							}
 						}
 					}
@@ -132,10 +131,12 @@ var MineSweeping = {
 					mineContext.fillStyle = "red";
 					mineContext.fillRect(mines[i][j].cloumns * 20, mines[i][j].rows * 20, this.block_width, this.block_height); //绘制矩形
 				} else {
-					mineContext.fillStyle = "blue";
+					mineContext.fillStyle = "white";
 					mineContext.font = "15px Arial";
 					mineContext.textAlign = 'center';
-					mineContext.fillText(mines[i][j].roundMines, mines[i][j].cloumns * 20 + 10, mines[i][j].rows * 20 + 15);
+					if (mines[i][j].roundMines !== 0) {
+						mineContext.fillText(mines[i][j].roundMines, mines[i][j].cloumns * 20 + 10, mines[i][j].rows * 20 + 15);
+					}
 				}
 			}
 		}
@@ -175,39 +176,53 @@ var MineSweeping = {
 
 		var getPosition = this.getEventPosition;
 		var getMineIndex = this.getMineIndex;
+		var cleanArr = this.cleanArr;
+		var selfMine = this;
 		maskCanvas.addEventListener("click", function(e) {
 			p = getPosition(e);
-			index = getMineIndex(p.x, p.y);
+			index = getMineIndex(p.x, p.y, selfMine);
 			maskContext.clearRect(index.xIndex * BLOCK_WIDTH, index.yIndex * BLOCK_HEIGHT, BLOCK_WIDTH - 1, BLOCK_HEIGHT - 1);
-			if (mines[index.xIndex][index.yIndex].isMined === true) {
-				alert("you lose");
-				maskContext.clearRect(0, 0, 600, 320);
+			if (mines[index.xIndex][index.yIndex].isClicked === false) {
+				mines[index.xIndex][index.yIndex].isClicked = true;
+				selfMine.count++;
 			}
-			// } else if (mines[index.xIndex][index.yIndex].roundMines === 0) {
-			// 	MineSweeping.cleanArr = [];
-			// 	arrs = MineSweeping.cleanArea(index.xIndex, index.yIndex);
-			// 	for (var i = 0, length1 = arrs.length; i < length1; i++) {
-			// 		maskContext.clearRect(arrs[i].columns * BLOCK_WIDTH, arrs[i].rows * BLOCK_HEIGHT, BLOCK_WIDTH - 1, BLOCK_HEIGHT - 1)
-			// 	}
-			// }
-			// } else if (mines[index.yIndex][index.xIndex].roundMines === 0) {
-			// 	for (let k = -1; k < 2; k++) {
-			// 		for (let l = -1; l < 2; l++) {
-			// 			if (index.yIndex + k > -1 && index.xIndex + l > -1 && index.yIndex + k < 16 && index.xIndex + l < 30) {
-			// 				maskContext.clearRect((index.xIndex + k) * BLOCK_WIDTH, (index.yIndex + l) * BLOCK_HEIGHT, BLOCK_WIDTH - 1, BLOCK_HEIGHT - 1);
-			// 				if (mines[index.yIndex + k][index.xIndex + l].roundMines === 0) {
-			// 					maskContext.clearRect((index.xIndex + k) * BLOCK_WIDTH, (index.yIndex + l) * BLOCK_HEIGHT, BLOCK_WIDTH - 1, BLOCK_HEIGHT - 1);
-			// 				}
-			// 			}
-			// 		}
-			// 	}
-			// }
 
+			if (selfMine.count === (480 - 99)) {
+				maskContext.clearRect(0, 0, 600, 320);
+				alert("you win");
+			}
+			if (mines[index.xIndex][index.yIndex].isMined === true) {
+				maskContext.clearRect(0, 0, 600, 320);
+				alert("you lose");
+				if (confirm("do you want to play again?"))
+
+				{
+					selfMine.init();
+				} else
+
+				{
+					alert("goodbye");
+				}
+			} else if (mines[index.xIndex][index.yIndex].roundMines === 0 && mines[index.xIndex][index.yIndex].isMined === false) {
+				selfMine.cleanArea(index.xIndex, index.yIndex, selfMine);
+				for (var i = 0, length1 = cleanArr.length; i < length1; i++) {
+					maskContext.clearRect(cleanArr[i].columns * BLOCK_WIDTH, cleanArr[i].rows * BLOCK_HEIGHT, BLOCK_WIDTH - 1, BLOCK_HEIGHT - 1)
+				}
+			}
 		}, false);
 	},
 
 
 	init: function() {
+		if (document.getElementById("maskCanvas")) {
+			document.getElementById("maskCanvas").remove()
+		}
+		if (document.getElementById("mineCanvas")) {
+			document.getElementById("mineCanvas").remove()
+		}
+		this.mines = [];
+		this.cleanArr = [];
+		this.count = 0;
 		this.createMines();
 		this.createMask();
 	}
