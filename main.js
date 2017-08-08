@@ -1,3 +1,5 @@
+"use strict";
+
 (function() {
 
 	function Mineblock(cloumns, rows) {
@@ -56,8 +58,8 @@
 	};
 
 	MineSweeping.cleanArea = function(columns, rows, mineObject) {
-		for (let k = -1; k < 2; k++) {
-			for (let l = -1; l < 2; l++) {
+		for (var k = -1; k < 2; k++) {
+			for (var l = -1; l < 2; l++) {
 				if (columns + l > -1 && rows + k > -1 && columns + l < panel_cloumns && rows + k < panel_rows && mines[columns + l][rows + k].isClicked === false) {
 					cleanArr.push({
 						columns: columns + l,
@@ -79,7 +81,7 @@
 			return {
 				xIndex: xIndex,
 				yIndex: yIndex
-			}
+			};
 		} else {
 			return false;
 		}
@@ -90,20 +92,20 @@
 			x = ev.layerX;
 			y = ev.layerY;
 			//y = ev.layerY - parentEle.layerY;
-		} else if (ev.offsetX || ev.offsetX == 0) { // Opera  
+		} else if (ev.offsetX || ev.offsetX == 0) {
+			// Opera  
 			x = ev.offsetX;
 			y = ev.offsetY;
 		}
 		return {
 			x: x,
 			y: y
-		}
+		};
 	};
 	//左右键同时按下
 	MineSweeping.handleDoubleClick = function(event, self) {
 		p = self.getEventPosition(event, maskCanvas);
 		index = self.getMineIndex(p.x, p.y, self);
-
 	};
 	//只有一个键被按下
 	MineSweeping.handleSingleClick = function(event, self) {
@@ -127,31 +129,25 @@
 						count++;
 					}
 					//胜利的条件
-					if (count === (panel_cloumns * panel_rows - mine_num)) {
+					if (count === panel_cloumns * panel_rows - mine_num) {
 						maskContext.clearRect(0, 0, panel_cloumns * block_width, panel_rows * block_height);
 						alert("you win");
 					}
 					if (mines[index.xIndex][index.yIndex].isMined === true) {
 						maskContext.clearRect(0, 0, panel_cloumns * block_width, panel_rows * block_height);
 						alert("you lose");
-						if (confirm("do you want to play again?"))
-
-						{
+						if (confirm("do you want to play again?")) {
 							self.init();
-						} else
-
-						{
+						} else {
 							alert("goodbye");
 						}
 					} else if (mines[index.xIndex][index.yIndex].roundMines === 0 && mines[index.xIndex][index.yIndex].isMined === false) {
 						self.cleanArea(index.xIndex, index.yIndex, self);
 						for (var i = 0, length1 = cleanArr.length; i < length1; i++) {
-							maskContext.clearRect(cleanArr[i].columns * block_width, cleanArr[i].rows * block_height, block_width - 1, block_height - 1)
+							maskContext.clearRect(cleanArr[i].columns * block_width, cleanArr[i].rows * block_height, block_width - 1, block_height - 1);
 						}
 					}
-
 				}
-
 			}
 		}
 		//右键点击事件 
@@ -166,18 +162,16 @@
 							img.onload = function() {
 								maskContext.drawImage(img, index.xIndex * block_width + 1, index.yIndex * block_height + 1, block_width - 2, block_height - 2);
 							};
-
 						} else {
 							mines[index.xIndex][index.yIndex].isFlaged = false;
 							maskContext.fillStyle = "#c2c2c2";
-							maskContext.strokeStyle = 'white'
+							maskContext.strokeStyle = 'white';
 							maskContext.fillRect(index.xIndex * block_width, index.yIndex * block_height, block_width, block_height);
 							maskContext.strokeRect(index.xIndex * block_width, index.yIndex * block_height, block_width, block_height);
 						}
 						return false;
 					}
 				}
-
 			}
 		}
 	};
@@ -202,7 +196,7 @@
 		mineCanvas.width = panel_cloumns * block_width;
 		mineCanvas.height = panel_rows * block_height;
 		mineCanvas.style.border = '1px solid #aaa';
-		mineCanvas.style.position = 'absolute'
+		mineCanvas.style.position = 'absolute';
 		mineCanvas.style.margin = 'auto';
 		mineCanvas.style.zIndex = '98';
 		mineCanvas.style.left = '0';
@@ -218,125 +212,135 @@
 
 		//背景填充
 		mineContext.fillStyle = "#D3D3D3";
-		mineContext.strokeStyle = 'white'
+		mineContext.strokeStyle = 'white';
 		mineContext.lineWidth = 1; //边框宽度
-		for (let x = 0; x < panel_cloumns * block_width; x = x + block_width) {
-			for (let y = 0; y < panel_rows * block_height; y = y + block_height) {
+		for (var x = 0; x < panel_cloumns * block_width; x = x + block_width) {
+			for (var y = 0; y < panel_rows * block_height; y = y + block_height) {
 				mineContext.fillRect(x, y, block_width, block_height);
 				mineContext.strokeRect(x, y, block_width, block_height);
 			}
 		}
-
 
 		var xIndex = [];
 		var yIndex = [];
 		var positions = [];
 		//创建二维数组mines
 		mines = new Array(panel_cloumns);
-		for (let i = 0, length1 = mines.length; i < length1; i++) {
+		for (var i = 0, length1 = mines.length; i < length1; i++) {
 			mines[i] = new Array(panel_rows);
 		}
 
-		for (let i = 0, length1 = mines.length; i < length1; i++) {
-			for (let j = 0, length1 = mines[i].length; j < length1; j++) {
-				mines[i][j] = new Mineblock(i, j);
+		for (var _i = 0, _length = mines.length; _i < _length; _i++) {
+			for (var j = 0, _length2 = mines[_i].length; j < _length2; j++) {
+				mines[_i][j] = new Mineblock(_i, j);
 			}
 		}
 		//生成所有可能的坐标索引
-		for (let i = 0; i < panel_cloumns; i++) {
-			for (let j = 0; j < panel_rows; j++) {
+		for (var _i2 = 0; _i2 < panel_cloumns; _i2++) {
+			for (var _j = 0; _j < panel_rows; _j++) {
 				positions.push({
-					x: i,
-					y: j
+					x: _i2,
+					y: _j
 				});
 			}
 		}
-		positions.splice((firstClick[0] * panel_rows + firstClick[1]), 1);
+		positions.splice(firstClick[0] * panel_rows + firstClick[1], 1);
 
 		//在所有可能的坐标中选出不重复的坐标
 
-		for (let i = 0; i < mine_num; i++) {
-			let index = Math.floor(Math.random() * positions.length);
-			let position = positions[index];
-			let x = position.x;
-			let y = position.y;
+		for (var _i3 = 0; _i3 < mine_num; _i3++) {
+			var _index = Math.floor(Math.random() * positions.length);
+			var position = positions[_index];
+			var _x = position.x;
+			var _y = position.y;
 			//mines[x][y] = new Mineblock(x, y);
-			mines[x][y].isMined = true;
-			positions.splice(index, 1);
+			mines[_x][_y].isMined = true;
+			positions.splice(_index, 1);
 		}
 		//遍历生成每个格子里的数字
 		var mineNum;
-		for (let i = 0, length1 = mines.length; i < length1; i++) {
-			for (let j = 0, length1 = mines[i].length; j < length1; j++) {
+		for (var _i4 = 0, _length3 = mines.length; _i4 < _length3; _i4++) {
+			for (var _j2 = 0, _length4 = mines[_i4].length; _j2 < _length4; _j2++) {
 				mineNum = 0;
-				for (let k = -1; k < 2; k++) {
-					for (let l = -1; l < 2; l++) {
-						if (i + l > -1 && j + k > -1 && i + l < panel_cloumns && j + k < panel_rows) {
-							if (mines[i + l][j + k].isMined === true) {
+				for (var k = -1; k < 2; k++) {
+					for (var l = -1; l < 2; l++) {
+						if (_i4 + l > -1 && _j2 + k > -1 && _i4 + l < panel_cloumns && _j2 + k < panel_rows) {
+							if (mines[_i4 + l][_j2 + k].isMined === true) {
 								mineNum++;
 							}
 						}
 					}
 				}
-				mines[i][j].roundMines = mineNum;
+				mines[_i4][_j2].roundMines = mineNum;
 			}
 		}
 		// var mineImg = new Image();
 		// var blockImg = new Image();
-		for (let i = 0; i < mines.length; i++) {
-			for (let j = 0; j < mines[i].length; j++) {
-				if (mines[i][j].isMined === true) {
-					var img = new Image();
+
+		var _loop = function _loop(_i5) {
+			var _loop2 = function _loop2(_j3) {
+				if (mines[_i5][_j3].isMined === true) {
+					img = new Image();
+
 					img.src = "images/bomb.jpg";
 					img.onload = function() {
-							mineContext.drawImage(img, mines[i][j].cloumns * block_width, mines[i][j].rows * block_height);
-						}
-						//mineContext.drawImage("images/bomb.jpg", mines[i][j].cloumns * block_width, mines[i][j].rows * block_height);
-						// mineContext.fillStyle = "red";
-						// mineContext.fillRect(mines[i][j].cloumns * block_width, mines[i][j].rows * block_height, block_width, block_height); //绘制矩形
+						mineContext.drawImage(img, mines[_i5][_j3].cloumns * block_width, mines[_i5][_j3].rows * block_height);
+					};
+					//mineContext.drawImage("images/bomb.jpg", mines[i][j].cloumns * block_width, mines[i][j].rows * block_height);
+					// mineContext.fillStyle = "red";
+					// mineContext.fillRect(mines[i][j].cloumns * block_width, mines[i][j].rows * block_height, block_width, block_height); //绘制矩形
 				}
-				if (mines[i][j].roundMines !== 0 && mines[i][j].isMined === false) {
+				if (mines[_i5][_j3].roundMines !== 0 && mines[_i5][_j3].isMined === false) {
 					//mineContext.fillStyle = "white";
 					mineContext.font = "15px Arial";
 					mineContext.textAlign = 'center';
-					switch (mines[i][j].roundMines) {
+					switch (mines[_i5][_j3].roundMines) {
 						case 1:
 							mineContext.fillStyle = "blue";
-							mineContext.fillText(mines[i][j].roundMines, mines[i][j].cloumns * block_width + 10, mines[i][j].rows * block_height + 15);
+							mineContext.fillText(mines[_i5][_j3].roundMines, mines[_i5][_j3].cloumns * block_width + 10, mines[_i5][_j3].rows * block_height + 15);
 							break;
 						case 2:
 							mineContext.fillStyle = "green";
-							mineContext.fillText(mines[i][j].roundMines, mines[i][j].cloumns * block_width + 10, mines[i][j].rows * block_height + 15);
+							mineContext.fillText(mines[_i5][_j3].roundMines, mines[_i5][_j3].cloumns * block_width + 10, mines[_i5][_j3].rows * block_height + 15);
 							break;
 						case 3:
 							mineContext.fillStyle = "red";
-							mineContext.fillText(mines[i][j].roundMines, mines[i][j].cloumns * block_width + 10, mines[i][j].rows * block_height + 15);
+							mineContext.fillText(mines[_i5][_j3].roundMines, mines[_i5][_j3].cloumns * block_width + 10, mines[_i5][_j3].rows * block_height + 15);
 							break;
 						case 4:
 							mineContext.fillStyle = "#4B0082";
-							mineContext.fillText(mines[i][j].roundMines, mines[i][j].cloumns * block_width + 10, mines[i][j].rows * block_height + 15);
+							mineContext.fillText(mines[_i5][_j3].roundMines, mines[_i5][_j3].cloumns * block_width + 10, mines[_i5][_j3].rows * block_height + 15);
 							break;
 						case 5:
 							mineContext.fillStyle = "#A0522D";
-							mineContext.fillText(mines[i][j].roundMines, mines[i][j].cloumns * block_width + 10, mines[i][j].rows * block_height + 15);
+							mineContext.fillText(mines[_i5][_j3].roundMines, mines[_i5][_j3].cloumns * block_width + 10, mines[_i5][_j3].rows * block_height + 15);
 							break;
 						case 6:
 							mineContext.fillStyle = "#00CED1";
-							mineContext.fillText(mines[i][j].roundMines, mines[i][j].cloumns * block_width + 10, mines[i][j].rows * block_height + 15);
+							mineContext.fillText(mines[_i5][_j3].roundMines, mines[_i5][_j3].cloumns * block_width + 10, mines[_i5][_j3].rows * block_height + 15);
 							break;
 						case 7:
 							mineContext.fillStyle = "black";
-							mineContext.fillText(mines[i][j].roundMines, mines[i][j].cloumns * block_width + 10, mines[i][j].rows * block_height + 15);
+							mineContext.fillText(mines[_i5][_j3].roundMines, mines[_i5][_j3].cloumns * block_width + 10, mines[_i5][_j3].rows * block_height + 15);
 							break;
 						case 8:
 							mineContext.fillStyle = "gray";
-							mineContext.fillText(mines[i][j].roundMines, mines[i][j].cloumns * block_width + 10, mines[i][j].rows * block_height + 15);
+							mineContext.fillText(mines[_i5][_j3].roundMines, mines[_i5][_j3].cloumns * block_width + 10, mines[_i5][_j3].rows * block_height + 15);
 							break;
 
 					}
-
 				}
+			};
+
+			for (var _j3 = 0; _j3 < mines[_i5].length; _j3++) {
+				_loop2(_j3);
 			}
+		};
+
+		for (var _i5 = 0; _i5 < mines.length; _i5++) {
+			var img;
+
+			_loop(_i5);
 		}
 	};
 	MineSweeping.createMask = function() {
@@ -348,7 +352,7 @@
 		maskCanvas.width = panel_cloumns * block_width;
 		maskCanvas.height = panel_rows * block_height;
 		maskCanvas.style.border = '1px solid #aaa';
-		maskCanvas.style.position = 'absolute'
+		maskCanvas.style.position = 'absolute';
 		maskCanvas.style.zIndex = '99';
 		maskCanvas.style.left = '0';
 		maskCanvas.style.top = '0';
@@ -363,10 +367,10 @@
 		}
 
 		maskContext.fillStyle = "#c2c2c2";
-		maskContext.strokeStyle = 'white'
+		maskContext.strokeStyle = 'white';
 		maskContext.lineWidth = 1; //边框宽度
-		for (let x = 0; x < panel_cloumns * block_width; x = x + block_width) {
-			for (let y = 0; y < panel_rows * block_height; y = y + block_height) {
+		for (var x = 0; x < panel_cloumns * block_width; x = x + block_width) {
+			for (var y = 0; y < panel_rows * block_height; y = y + block_height) {
 				maskContext.fillRect(x, y, block_width, block_height);
 				maskContext.strokeRect(x, y, block_width, block_height);
 			}
@@ -385,13 +389,12 @@
 		}, false);
 	};
 
-
 	MineSweeping.init = function(mine_number) {
 		if (document.getElementById("maskCanvas")) {
-			document.getElementById("maskCanvas").remove()
+			document.getElementById("maskCanvas").remove();
 		}
 		if (document.getElementById("mineCanvas")) {
-			document.getElementById("mineCanvas").remove()
+			document.getElementById("mineCanvas").remove();
 		}
 		mines = [];
 		cleanArr = [];
