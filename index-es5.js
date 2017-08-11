@@ -1,4 +1,6 @@
-(function() {
+"use strict";
+
+(function () {
 	function Mineblock(columns, rows) {
 		this.columns = columns;
 		this.rows = rows;
@@ -28,12 +30,11 @@
 	var oTimer;
 	var myTime;
 
-
-	MineSweeping.setTimer = function(isFinished) {
+	MineSweeping.setTimer = function (isFinished) {
 		var timeText;
 
 		function settime() {
-			timeCount = timeCount + 1
+			timeCount = timeCount + 1;
 			if (timeCount < 10) {
 				timeText = "00" + timeCount;
 			} else if (timeCount >= 10 && timeCount < 100) {
@@ -46,14 +47,11 @@
 
 		if (isFinished === false) {
 			myTime = setInterval(settime, 1000);
-
 		} else {
-			clearInterval(myTime)
+			clearInterval(myTime);
 		}
-
-
 	};
-	MineSweeping.setMineNum = function(mine_number) {
+	MineSweeping.setMineNum = function (mine_number) {
 		switch (mine_number) {
 			case 10:
 				panel_columns = 8;
@@ -73,7 +71,7 @@
 		}
 	};
 
-	MineSweeping.handleClick = function(e, self) {
+	MineSweeping.handleClick = function (e, self) {
 		switch (e.type) {
 			case "mousedown":
 				MineSweeping.handleSingleClick(e, self);
@@ -81,7 +79,7 @@
 		}
 	};
 
-	MineSweeping.cleanArea = function(columns, rows, mineObject) {
+	MineSweeping.cleanArea = function (columns, rows, mineObject) {
 		for (var k = -1; k < 2; k++) {
 			for (var l = -1; l < 2; l++) {
 				if (columns + l > -1 && rows + k > -1 && columns + l < panel_columns && rows + k < panel_rows && mines[columns + l][rows + k].isClicked === false) {
@@ -99,7 +97,7 @@
 		}
 	};
 
-	MineSweeping.getMineIndex = function(x, y, mineObject) {
+	MineSweeping.getMineIndex = function (x, y, mineObject) {
 		if (x > 0 && y > 0 && x < panel_columns * block_width - 1 && y < panel_rows < panel_rows * block_height - 1) {
 			var xIndex = Math.floor(x / block_width);
 			var yIndex = Math.floor(y / block_height);
@@ -112,7 +110,7 @@
 		}
 	};
 
-	MineSweeping.getEventPosition = function(ev, parentEle) {
+	MineSweeping.getEventPosition = function (ev, parentEle) {
 		var x, y;
 		x = ev.clientX - parseInt(maskCanvas.style.left);
 		y = ev.clientY - parseInt(maskCanvas.style.top);
@@ -123,13 +121,13 @@
 	};
 
 	//左右键同时按下
-	MineSweeping.handleDoubleClick = function(event, self) {
+	MineSweeping.handleDoubleClick = function (event, self) {
 		p = self.getEventPosition(event, maskCanvas);
 		index = self.getMineIndex(p.x, p.y, self);
 	};
 
 	//只有一个键被按下
-	MineSweeping.handleSingleClick = function(event, self) {
+	MineSweeping.handleSingleClick = function (event, self) {
 		var p = self.getEventPosition(event, maskCanvas);
 		var index = self.getMineIndex(p.x, p.y, self);
 		//左键点击事件
@@ -162,7 +160,7 @@
 							maskContext.clearRect(0, 0, panel_columns * block_width, panel_rows * block_height);
 							var img = new Image();
 							img.src = "images/bomb0.jpg";
-							img.onload = function() {
+							img.onload = function () {
 								mineContext.drawImage(img, index.xIndex * block_width + 1, index.yIndex * block_height + 1, block_width - 2, block_height - 2);
 							};
 							maskCanvas.remove();
@@ -183,34 +181,33 @@
 			}
 			//右键点击事件 
 			else if (event.button === 2) {
-				if (index) {
-					if (count !== 0) {
-						if (mines[index.xIndex][index.yIndex].isClicked === false) {
-							if (mines[index.xIndex][index.yIndex].isFlaged === false) {
-								mines[index.xIndex][index.yIndex].isFlaged = true;
-								var img = new Image();
-								img.src = "images/flag.jpg";
-								img.onload = function() {
-									maskContext.drawImage(img, index.xIndex * block_width + 1, index.yIndex * block_height + 1, block_width - 2, block_height - 2);
-								};
-							} else if (mines[index.xIndex][index.yIndex].isFlaged === true) {
-								mines[index.xIndex][index.yIndex].isFlaged = false;
-								maskContext.fillStyle = "#c2c2c2";
-								maskContext.strokeStyle = 'white';
-								maskContext.fillRect(index.xIndex * block_width, index.yIndex * block_height, block_width, block_height);
-								maskContext.strokeRect(index.xIndex * block_width, index.yIndex * block_height, block_width, block_height);
+					if (index) {
+						if (count !== 0) {
+							if (mines[index.xIndex][index.yIndex].isClicked === false) {
+								if (mines[index.xIndex][index.yIndex].isFlaged === false) {
+									mines[index.xIndex][index.yIndex].isFlaged = true;
+									var img = new Image();
+									img.src = "images/flag.jpg";
+									img.onload = function () {
+										maskContext.drawImage(img, index.xIndex * block_width + 1, index.yIndex * block_height + 1, block_width - 2, block_height - 2);
+									};
+								} else if (mines[index.xIndex][index.yIndex].isFlaged === true) {
+									mines[index.xIndex][index.yIndex].isFlaged = false;
+									maskContext.fillStyle = "#c2c2c2";
+									maskContext.strokeStyle = 'white';
+									maskContext.fillRect(index.xIndex * block_width, index.yIndex * block_height, block_width, block_height);
+									maskContext.strokeRect(index.xIndex * block_width, index.yIndex * block_height, block_width, block_height);
+								}
+								return false;
 							}
-							return false;
 						}
 					}
 				}
-			}
 		}
-
 	};
 
 	//创建地雷层，设置99个雷
-	MineSweeping.createMines = function() {
+	MineSweeping.createMines = function () {
 		//创造地雷层的canvas
 		mineCanvas = document.createElement("canvas");
 		mineCanvas.id = "mineCanvas";
@@ -296,57 +293,68 @@
 			}
 		}
 
-		for (let i = 0, length1 = mines.length; i < length1; i++) {
-			for (let j = 0, length2 = mines[i].length; j < length2; j++) {
-				if (mines[i][j].isMined === true) {
-					var img = new Image();
+		var _loop = function _loop(_i5, _length5) {
+			var _loop2 = function _loop2(length2, _j3) {
+				if (mines[_i5][_j3].isMined === true) {
+					img = new Image();
+
 					img.src = "images/bomb.jpg";
-					img.onload = function() {
-						mineContext.drawImage(img, mines[i][j].columns * block_width, mines[i][j].rows * block_height);
+					img.onload = function () {
+						mineContext.drawImage(img, mines[_i5][_j3].columns * block_width, mines[_i5][_j3].rows * block_height);
 					};
 				}
-				if (mines[i][j].roundMines !== 0 && mines[i][j].isMined === false) {
+				if (mines[_i5][_j3].roundMines !== 0 && mines[_i5][_j3].isMined === false) {
 					mineContext.font = "15px Arial";
 					mineContext.textAlign = 'center';
-					switch (mines[i][j].roundMines) {
+					switch (mines[_i5][_j3].roundMines) {
 						case 1:
 							mineContext.fillStyle = "blue";
-							mineContext.fillText(mines[i][j].roundMines, mines[i][j].columns * block_width + 10, mines[i][j].rows * block_height + 15);
+							mineContext.fillText(mines[_i5][_j3].roundMines, mines[_i5][_j3].columns * block_width + 10, mines[_i5][_j3].rows * block_height + 15);
 							break;
 						case 2:
 							mineContext.fillStyle = "green";
-							mineContext.fillText(mines[i][j].roundMines, mines[i][j].columns * block_width + 10, mines[i][j].rows * block_height + 15);
+							mineContext.fillText(mines[_i5][_j3].roundMines, mines[_i5][_j3].columns * block_width + 10, mines[_i5][_j3].rows * block_height + 15);
 							break;
 						case 3:
 							mineContext.fillStyle = "red";
-							mineContext.fillText(mines[i][j].roundMines, mines[i][j].columns * block_width + 10, mines[i][j].rows * block_height + 15);
+							mineContext.fillText(mines[_i5][_j3].roundMines, mines[_i5][_j3].columns * block_width + 10, mines[_i5][_j3].rows * block_height + 15);
 							break;
 						case 4:
 							mineContext.fillStyle = "#4B0082";
-							mineContext.fillText(mines[i][j].roundMines, mines[i][j].columns * block_width + 10, mines[i][j].rows * block_height + 15);
+							mineContext.fillText(mines[_i5][_j3].roundMines, mines[_i5][_j3].columns * block_width + 10, mines[_i5][_j3].rows * block_height + 15);
 							break;
 						case 5:
 							mineContext.fillStyle = "#A0522D";
-							mineContext.fillText(mines[i][j].roundMines, mines[i][j].columns * block_width + 10, mines[i][j].rows * block_height + 15);
+							mineContext.fillText(mines[_i5][_j3].roundMines, mines[_i5][_j3].columns * block_width + 10, mines[_i5][_j3].rows * block_height + 15);
 							break;
 						case 6:
 							mineContext.fillStyle = "#00CED1";
-							mineContext.fillText(mines[i][j].roundMines, mines[i][j].columns * block_width + 10, mines[i][j].rows * block_height + 15);
+							mineContext.fillText(mines[_i5][_j3].roundMines, mines[_i5][_j3].columns * block_width + 10, mines[_i5][_j3].rows * block_height + 15);
 							break;
 						case 7:
 							mineContext.fillStyle = "black";
-							mineContext.fillText(mines[i][j].roundMines, mines[i][j].columns * block_width + 10, mines[i][j].rows * block_height + 15);
+							mineContext.fillText(mines[_i5][_j3].roundMines, mines[_i5][_j3].columns * block_width + 10, mines[_i5][_j3].rows * block_height + 15);
 							break;
 						case 8:
 							mineContext.fillStyle = "gray";
-							mineContext.fillText(mines[i][j].roundMines, mines[i][j].columns * block_width + 10, mines[i][j].rows * block_height + 15);
+							mineContext.fillText(mines[_i5][_j3].roundMines, mines[_i5][_j3].columns * block_width + 10, mines[_i5][_j3].rows * block_height + 15);
 							break;
 					}
 				}
+			};
+
+			for (var _j3 = 0, length2 = mines[_i5].length; _j3 < length2; _j3++) {
+				_loop2(length2, _j3);
 			}
+		};
+
+		for (var _i5 = 0, _length5 = mines.length; _i5 < _length5; _i5++) {
+			var img;
+
+			_loop(_i5, _length5);
 		}
 	};
-	MineSweeping.createMask = function() {
+	MineSweeping.createMask = function () {
 		maskCanvas = document.createElement("canvas");
 		maskCanvas.id = "maskCanvas";
 		maskCanvas.width = panel_columns * block_width;
@@ -379,12 +387,12 @@
 		var getMineIndex = this.getMineIndex;
 		var selfMine = this;
 
-		maskCanvas.addEventListener("mousedown", function(e) {
+		maskCanvas.addEventListener("mousedown", function (e) {
 			selfMine.handleClick(e, selfMine);
 		}, false);
 	};
 
-	MineSweeping.createInfo = function() {
+	MineSweeping.createInfo = function () {
 		var mask = document.getElementById("maskCanvas");
 		var oInfo = document.createElement("div");
 		oInfo.id = "minesweeping-info-block";
@@ -397,7 +405,6 @@
 		oTimer.style.color = 'red';
 		oTimer.style.textAlign = 'center';
 		oTimer.style.marginBottom = '20px';
-
 
 		var oButton = document.createElement("button");
 		oButton.id = "minesweeping-info-button";
@@ -412,15 +419,15 @@
 		oInfo.appendChild(oButton);
 		document.body.insertBefore(oInfo, mask);
 		oInfo.style.position = 'absolute';
-		oInfo.style.top = parseInt(mask.style.top) + (panel_rows * block_height) / 2 + 'px';
+		oInfo.style.top = parseInt(mask.style.top) + panel_rows * block_height / 2 + 'px';
 		//oInfo.style.top = panel_rows * block_height + 'px';
-		oButton.addEventListener("click", function() {
+		oButton.addEventListener("click", function () {
 			MineSweeping.init();
 			MineSweeping.setTimer(true);
 		}, false);
 	};
 
-	MineSweeping.init = function(mine_number) {
+	MineSweeping.init = function (mine_number) {
 		if (document.getElementById("maskCanvas")) {
 			document.getElementById("maskCanvas").remove();
 		}
@@ -437,9 +444,9 @@
 		//禁止右键点击弹出菜单事件
 		// document.oncontextmenu = new Function("event.returnValue=false;");
 		// document.onselectstart = new Function("event.returnValue=false;");
-		document.oncontextmenu = function(e) {
+		document.oncontextmenu = function (e) {
 			return false; // 主页面不允许右键（兼容多浏览器）
-		}
+		};
 		this.setMineNum(mine_number);
 		this.createMask();
 		this.createInfo();
