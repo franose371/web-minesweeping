@@ -81,6 +81,7 @@
 		}
 	};
 
+	//清除当前点击块周围的块
 	MineSweeping.cleanArea = function(columns, rows, mineObject) {
 		for (var k = -1; k < 2; k++) {
 			for (var l = -1; l < 2; l++) {
@@ -122,7 +123,7 @@
 		};
 	};
 
-	//左右键同时按下
+	//左右键同时按下，还未完成
 	MineSweeping.handleDoubleClick = function(event, self) {
 		p = self.getEventPosition(event, maskCanvas);
 		index = self.getMineIndex(p.x, p.y, self);
@@ -434,6 +435,7 @@
 		cleanArr = [];
 		count = 0;
 		timeCount = 0;
+		firstClick = [];
 		//禁止右键点击弹出菜单事件
 		// document.oncontextmenu = new Function("event.returnValue=false;");
 		// document.onselectstart = new Function("event.returnValue=false;");

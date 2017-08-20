@@ -1,6 +1,6 @@
 "use strict";
 
-(function () {
+(function() {
 	function Mineblock(columns, rows) {
 		this.columns = columns;
 		this.rows = rows;
@@ -30,7 +30,7 @@
 	var oTimer;
 	var myTime;
 
-	MineSweeping.setTimer = function (isFinished) {
+	MineSweeping.setTimer = function(isFinished) {
 		var timeText;
 
 		function settime() {
@@ -51,7 +51,7 @@
 			clearInterval(myTime);
 		}
 	};
-	MineSweeping.setMineNum = function (mine_number) {
+	MineSweeping.setMineNum = function(mine_number) {
 		switch (mine_number) {
 			case 10:
 				panel_columns = 8;
@@ -71,7 +71,7 @@
 		}
 	};
 
-	MineSweeping.handleClick = function (e, self) {
+	MineSweeping.handleClick = function(e, self) {
 		switch (e.type) {
 			case "mousedown":
 				MineSweeping.handleSingleClick(e, self);
@@ -79,7 +79,7 @@
 		}
 	};
 
-	MineSweeping.cleanArea = function (columns, rows, mineObject) {
+	MineSweeping.cleanArea = function(columns, rows, mineObject) {
 		for (var k = -1; k < 2; k++) {
 			for (var l = -1; l < 2; l++) {
 				if (columns + l > -1 && rows + k > -1 && columns + l < panel_columns && rows + k < panel_rows && mines[columns + l][rows + k].isClicked === false) {
@@ -97,7 +97,7 @@
 		}
 	};
 
-	MineSweeping.getMineIndex = function (x, y, mineObject) {
+	MineSweeping.getMineIndex = function(x, y, mineObject) {
 		if (x > 0 && y > 0 && x < panel_columns * block_width - 1 && y < panel_rows < panel_rows * block_height - 1) {
 			var xIndex = Math.floor(x / block_width);
 			var yIndex = Math.floor(y / block_height);
@@ -110,7 +110,7 @@
 		}
 	};
 
-	MineSweeping.getEventPosition = function (ev, parentEle) {
+	MineSweeping.getEventPosition = function(ev, parentEle) {
 		var x, y;
 		x = ev.clientX - parseInt(maskCanvas.style.left);
 		y = ev.clientY - parseInt(maskCanvas.style.top);
@@ -121,13 +121,13 @@
 	};
 
 	//左右键同时按下
-	MineSweeping.handleDoubleClick = function (event, self) {
+	MineSweeping.handleDoubleClick = function(event, self) {
 		p = self.getEventPosition(event, maskCanvas);
 		index = self.getMineIndex(p.x, p.y, self);
 	};
 
 	//只有一个键被按下
-	MineSweeping.handleSingleClick = function (event, self) {
+	MineSweeping.handleSingleClick = function(event, self) {
 		var p = self.getEventPosition(event, maskCanvas);
 		var index = self.getMineIndex(p.x, p.y, self);
 		//左键点击事件
@@ -160,7 +160,7 @@
 							maskContext.clearRect(0, 0, panel_columns * block_width, panel_rows * block_height);
 							var img = new Image();
 							img.src = "images/bomb0.jpg";
-							img.onload = function () {
+							img.onload = function() {
 								mineContext.drawImage(img, index.xIndex * block_width + 1, index.yIndex * block_height + 1, block_width - 2, block_height - 2);
 							};
 							maskCanvas.remove();
@@ -181,33 +181,33 @@
 			}
 			//右键点击事件 
 			else if (event.button === 2) {
-					if (index) {
-						if (count !== 0) {
-							if (mines[index.xIndex][index.yIndex].isClicked === false) {
-								if (mines[index.xIndex][index.yIndex].isFlaged === false) {
-									mines[index.xIndex][index.yIndex].isFlaged = true;
-									var img = new Image();
-									img.src = "images/flag.jpg";
-									img.onload = function () {
-										maskContext.drawImage(img, index.xIndex * block_width + 1, index.yIndex * block_height + 1, block_width - 2, block_height - 2);
-									};
-								} else if (mines[index.xIndex][index.yIndex].isFlaged === true) {
-									mines[index.xIndex][index.yIndex].isFlaged = false;
-									maskContext.fillStyle = "#c2c2c2";
-									maskContext.strokeStyle = 'white';
-									maskContext.fillRect(index.xIndex * block_width, index.yIndex * block_height, block_width, block_height);
-									maskContext.strokeRect(index.xIndex * block_width, index.yIndex * block_height, block_width, block_height);
-								}
-								return false;
+				if (index) {
+					if (count !== 0) {
+						if (mines[index.xIndex][index.yIndex].isClicked === false) {
+							if (mines[index.xIndex][index.yIndex].isFlaged === false) {
+								mines[index.xIndex][index.yIndex].isFlaged = true;
+								var img = new Image();
+								img.src = "images/flag.jpg";
+								img.onload = function() {
+									maskContext.drawImage(img, index.xIndex * block_width + 1, index.yIndex * block_height + 1, block_width - 2, block_height - 2);
+								};
+							} else if (mines[index.xIndex][index.yIndex].isFlaged === true) {
+								mines[index.xIndex][index.yIndex].isFlaged = false;
+								maskContext.fillStyle = "#c2c2c2";
+								maskContext.strokeStyle = 'white';
+								maskContext.fillRect(index.xIndex * block_width, index.yIndex * block_height, block_width, block_height);
+								maskContext.strokeRect(index.xIndex * block_width, index.yIndex * block_height, block_width, block_height);
 							}
+							return false;
 						}
 					}
 				}
+			}
 		}
 	};
 
 	//创建地雷层，设置99个雷
-	MineSweeping.createMines = function () {
+	MineSweeping.createMines = function() {
 		//创造地雷层的canvas
 		mineCanvas = document.createElement("canvas");
 		mineCanvas.id = "mineCanvas";
@@ -299,7 +299,7 @@
 					img = new Image();
 
 					img.src = "images/bomb.jpg";
-					img.onload = function () {
+					img.onload = function() {
 						mineContext.drawImage(img, mines[_i5][_j3].columns * block_width, mines[_i5][_j3].rows * block_height);
 					};
 				}
@@ -354,7 +354,7 @@
 			_loop(_i5, _length5);
 		}
 	};
-	MineSweeping.createMask = function () {
+	MineSweeping.createMask = function() {
 		maskCanvas = document.createElement("canvas");
 		maskCanvas.id = "maskCanvas";
 		maskCanvas.width = panel_columns * block_width;
@@ -387,12 +387,12 @@
 		var getMineIndex = this.getMineIndex;
 		var selfMine = this;
 
-		maskCanvas.addEventListener("mousedown", function (e) {
+		maskCanvas.addEventListener("mousedown", function(e) {
 			selfMine.handleClick(e, selfMine);
 		}, false);
 	};
 
-	MineSweeping.createInfo = function () {
+	MineSweeping.createInfo = function() {
 		var mask = document.getElementById("maskCanvas");
 		var oInfo = document.createElement("div");
 		oInfo.id = "minesweeping-info-block";
@@ -421,13 +421,13 @@
 		oInfo.style.position = 'absolute';
 		oInfo.style.top = parseInt(mask.style.top) + panel_rows * block_height / 2 + 'px';
 		//oInfo.style.top = panel_rows * block_height + 'px';
-		oButton.addEventListener("click", function () {
+		oButton.addEventListener("click", function() {
 			MineSweeping.init();
 			MineSweeping.setTimer(true);
 		}, false);
 	};
 
-	MineSweeping.init = function (mine_number) {
+	MineSweeping.init = function(mine_number) {
 		if (document.getElementById("maskCanvas")) {
 			document.getElementById("maskCanvas").remove();
 		}
@@ -441,10 +441,11 @@
 		cleanArr = [];
 		count = 0;
 		timeCount = 0;
+		firstClick = [];
 		//禁止右键点击弹出菜单事件
 		// document.oncontextmenu = new Function("event.returnValue=false;");
 		// document.onselectstart = new Function("event.returnValue=false;");
-		document.oncontextmenu = function (e) {
+		document.oncontextmenu = function(e) {
 			return false; // 主页面不允许右键（兼容多浏览器）
 		};
 		this.setMineNum(mine_number);
