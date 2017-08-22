@@ -27,6 +27,10 @@
 	var mineContext;
 	var oTimer;
 	var myTime;
+	var isMouseDown = false;
+	var isDoubleMouseDown = false;
+	var isGameLose = false;
+	var wrongedMineIndex = [];
 
 
 	MineSweeping.setTimer = function(isFinished) {
@@ -73,25 +77,37 @@
 		}
 	};
 
-	MineSweeping.handleClick = function(e, self) {
-		switch (e.type) {
-			case "mousedown":
-				MineSweeping.handleSingleClick(e, self);
-				break;
-		}
+	//清除遮罩层
+	MineSweeping.cleanMask = function(columns, rows) {
+		maskContext.clearRect(0, 0, panel_columns * block_width, panel_rows * block_height);
+		var img = new Image();
+		img.src = "images/bomb0.jpg";
+		img.onload = function() {
+			mineContext.drawImage(img, columns * block_width + 1, rows * block_height + 1, block_width - 2, block_height - 2);
+		};
+		maskCanvas.remove();
+		MineSweeping.setTimer(true);
 	};
-
 	//清除当前点击块周围的块
 	MineSweeping.cleanArea = function(columns, rows, mineObject) {
 		for (var k = -1; k < 2; k++) {
 			for (var l = -1; l < 2; l++) {
 				if (columns + l > -1 && rows + k > -1 && columns + l < panel_columns && rows + k < panel_rows && mines[columns + l][rows + k].isClicked === false) {
-					cleanArr.push({
-						columns: columns + l,
-						rows: rows + k
-					});
-					mines[columns + l][rows + k].isClicked = true;
-					count++;
+					if (mines[columns + l][rows + k].isFlaged === false) {
+						cleanArr.push({
+							columns: columns + l,
+							rows: rows + k
+						});
+						mines[columns + l][rows + k].isClicked = true;
+						count++;
+					}
+					if (mines[columns + l][rows + k].isClicked === true && mines[columns + l][rows + k].isMined === true && mines[columns + l][rows + k].isFlaged === false) {
+						isGameLose = true;
+						wrongedMineIndex.push({
+							xIndex: columns + l,
+							yIndex: rows + k
+						});
+					}
 					if (mines[columns + l][rows + k].roundMines === 0) {
 						mineObject.cleanArea(columns + l, rows + k, mineObject);
 					}
@@ -100,6 +116,7 @@
 		}
 	};
 
+	//得到当前索引
 	MineSweeping.getMineIndex = function(x, y, mineObject) {
 		if (x > 0 && y > 0 && x < panel_columns * block_width - 1 && y < panel_rows < panel_rows * block_height - 1) {
 			var xIndex = Math.floor(x / block_width);
@@ -123,12 +140,52 @@
 		};
 	};
 
-	//左右键同时按下，还未完成
-	MineSweeping.handleDoubleClick = function(event, self) {
-		p = self.getEventPosition(event, maskCanvas);
-		index = self.getMineIndex(p.x, p.y, self);
+	MineSweeping.handleClick = function(e, self) {
+		var p = self.getEventPosition(event, maskCanvas);
+		var index = self.getMineIndex(p.x, p.y, self);
+		if (e.type === "mouseup") {
+			if (isDoubleMouseDown === true) {
+				MineSweeping.handleDoubleClick(e, self);
+			} else {
+				MineSweeping.handleSingleClick(e, self);
+			}
+		}
 	};
 
+	//左右键同时按下，还未完成
+	MineSweeping.handleDoubleClick = function(event, self) {
+		var p = self.getEventPosition(event, maskCanvas);
+		var index = self.getMineIndex(p.x, p.y, self);
+		var flagNum = 0;
+		var columns = index.xIndex;
+		var rows = index.yIndex;
+		if (mines[index.xIndex][index.yIndex].isClicked === true) {
+			for (var k = -1; k < 2; k++) {
+				for (var l = -1; l < 2; l++) {
+					if (columns + l > -1 && rows + k > -1 && columns + l < panel_columns && rows + k < panel_rows) {
+						if (mines[columns + l][rows + k].isFlaged === true) {
+							flagNum++;
+						}
+					}
+
+				}
+			}
+			if (flagNum === mines[index.xIndex][index.yIndex].roundMines) {
+				MineSweeping.cleanArea(index.xIndex, index.yIndex, self);
+				for (var i = 0, length1 = cleanArr.length; i < length1; i++) {
+					maskContext.clearRect(cleanArr[i].columns * block_width, cleanArr[i].rows * block_height, block_width - 1, block_height - 1);
+				}
+			}
+			if (isGameLose === true) {
+				MineSweeping.cleanMask(wrongedMineIndex[0].xIndex, wrongedMineIndex[0].yIndex);
+			}
+			if (count === panel_columns * panel_rows - mine_num) {
+				MineSweeping.cleanMask();
+			}
+		}
+		isMouseDown = false;
+		isDoubleMouseDown = false;
+	};
 	//只有一个键被按下
 	MineSweeping.handleSingleClick = function(event, self) {
 		var p = self.getEventPosition(event, maskCanvas);
@@ -160,14 +217,7 @@
 						}
 						//点击到雷时
 						if (mines[index.xIndex][index.yIndex].isMined === true && mines[index.xIndex][index.yIndex].isClicked === false) {
-							maskContext.clearRect(0, 0, panel_columns * block_width, panel_rows * block_height);
-							var img = new Image();
-							img.src = "images/bomb0.jpg";
-							img.onload = function() {
-								mineContext.drawImage(img, index.xIndex * block_width + 1, index.yIndex * block_height + 1, block_width - 2, block_height - 2);
-							};
-							maskCanvas.remove();
-							self.setTimer(true);
+							MineSweeping.cleanMask(index.xIndex, index.yIndex);
 						} else if (mines[index.xIndex][index.yIndex].roundMines === 0 && mines[index.xIndex][index.yIndex].isMined === false) {
 							self.cleanArea(index.xIndex, index.yIndex, self);
 							for (var i = 0, length1 = cleanArr.length; i < length1; i++) {
@@ -209,6 +259,7 @@
 		}
 
 	};
+
 
 	//创建地雷层，设置99个雷
 	MineSweeping.createMines = function() {
@@ -380,8 +431,16 @@
 		var getMineIndex = this.getMineIndex;
 		var selfMine = this;
 
-		maskCanvas.addEventListener("mousedown", function(e) {
+		maskCanvas.addEventListener("mouseup", function(e) {
+			isMouseDown = false;
 			selfMine.handleClick(e, selfMine);
+		}, false);
+		maskCanvas.addEventListener("mousedown", function(e) {
+			if (isMouseDown === true) {
+				isDoubleMouseDown = true;
+			} else {
+				isMouseDown = true;
+			}
 		}, false);
 	};
 
@@ -436,6 +495,8 @@
 		count = 0;
 		timeCount = 0;
 		firstClick = [];
+		isGameLose = false;
+		wrongedMineIndex = [];
 		//禁止右键点击弹出菜单事件
 		// document.oncontextmenu = new Function("event.returnValue=false;");
 		// document.onselectstart = new Function("event.returnValue=false;");
