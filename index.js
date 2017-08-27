@@ -152,7 +152,7 @@
 		}
 	};
 
-	//左右键同时按下，还未完成
+	//左右键同时按下
 	MineSweeping.handleDoubleClick = function(event, self) {
 		var p = self.getEventPosition(event, maskCanvas);
 		var index = self.getMineIndex(p.x, p.y, self);
@@ -181,6 +181,8 @@
 			}
 			if (count === panel_columns * panel_rows - mine_num) {
 				MineSweeping.cleanMask();
+				self.setTimer(true);
+				alert("you win! time:" + parseInt(oTimer.innerHTML) + "s");
 			}
 		}
 		isMouseDown = false;
@@ -214,6 +216,7 @@
 							maskContext.clearRect(0, 0, panel_columns * block_width, panel_rows * block_height);
 							maskCanvas.remove();
 							self.setTimer(true);
+							alert("you win! time:" + parseInt(oTimer.innerHTML) + "s");
 						}
 						//点击到雷时
 						if (mines[index.xIndex][index.yIndex].isMined === true && mines[index.xIndex][index.yIndex].isClicked === false) {
@@ -226,7 +229,7 @@
 							if (count === panel_columns * panel_rows - mine_num) {
 								maskContext.clearRect(0, 0, panel_columns * block_width, panel_rows * block_height);
 								maskCanvas.remove();
-								alert("you win");
+								alert("you win! time: " + parseInt(oTimer.innerHTML) + "s");
 							}
 						}
 					}
@@ -473,7 +476,6 @@
 		document.body.insertBefore(oInfo, mask);
 		oInfo.style.position = 'absolute';
 		oInfo.style.top = parseInt(mask.style.top) + (panel_rows * block_height) / 2 + 'px';
-		//oInfo.style.top = panel_rows * block_height + 'px';
 		oButton.addEventListener("click", function() {
 			MineSweeping.init();
 			MineSweeping.setTimer(true);
@@ -497,15 +499,53 @@
 		firstClick = [];
 		isGameLose = false;
 		wrongedMineIndex = [];
-		//禁止右键点击弹出菜单事件
-		// document.oncontextmenu = new Function("event.returnValue=false;");
-		// document.onselectstart = new Function("event.returnValue=false;");
+		//禁止右键事件
 		document.oncontextmenu = function(e) {
-			return false; // 主页面不允许右键（兼容多浏览器）
+			return false;
 		}
 		this.setMineNum(mine_number);
 		this.createMask();
 		this.createInfo();
 	};
+
+	MineSweeping.setLevel = function() {
+		//默认显示初级扫雷
+		MineSweeping.init(10);
+		var oInfo = document.createElement("span");
+		oInfo.innerHTML = "请选择难度：";
+		var oSel = document.createElement("select");
+		//根据屏幕宽度显示可选择的级别
+		if (screen.width < 430) {
+			oSel.innerHTML = `<option value="beginner">初级</option>`;
+		} else if (screen.width < 710) {
+			oSel.innerHTML = `  <option value="beginner">初级</option>
+								<option value ="intermediate">中级</option>
+  								`;
+		} else {
+			oSel.innerHTML = `  <option value="beginner">初级</option>
+								<option value ="intermediate">中级</option>
+								<option value ="expert">高级</option>
+  							`;
+		}
+		document.body.appendChild(oInfo);
+		document.body.appendChild(oSel);
+		oSel.addEventListener("change", function(e) {
+			e = e || window.event;
+			var target = e.target || e.srcElement;
+			switch (target.value) {
+				case "beginner":
+					MineSweeping.init(10);
+					break;
+				case "intermediate":
+					MineSweeping.init(40)
+					break;
+				case "expert":
+					MineSweeping.init(99);
+					break;
+			}
+		}, false);
+
+
+	}
 	window.MineSweeping = MineSweeping;
 })();
