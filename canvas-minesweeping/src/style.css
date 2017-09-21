@@ -1,0 +1,38 @@
+#mineCanvas {
+	margin: auto;
+	border: 1px solid #aaa;
+	position: absolute;
+	z-index: 98;
+	left: 100px;
+	top: 100px;
+}
+
+#maskCanvas {
+	margin: auto;
+	border: 1px solid #aaa;
+	position: absolute;
+	z-index: 99;
+	left: 100px;
+	top: 100px;
+}
+
+#minesweeping-info-block {
+	position: absolute;
+}
+
+#minesweeping-info-timer {
+	width: 50px;
+	height: 20px;
+	background-color: black;
+	color: red;
+	text-align: center;
+	margin-bottom: 20px;
+}
+
+#minesweeping-info-button {
+	width: 50px;
+	height: 20px;
+	background-color: gray;
+	color: white;
+	text-align: center;
+}

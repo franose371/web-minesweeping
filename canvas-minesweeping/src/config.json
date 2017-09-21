@@ -1,0 +1,17 @@
+{
+	"expert": {
+		"mine_num": 99,
+		"panel_columns": 30,
+		"panel_rows": 16
+	},
+	"intermediate": {
+		"mine_num": 40,
+		"panel_columns": 16,
+		"panel_rows": 16
+	},
+	"beginner": {
+		"mine_num": 10,
+		"panel_columns": 8,
+		"panel_rows": 8
+	}
+}

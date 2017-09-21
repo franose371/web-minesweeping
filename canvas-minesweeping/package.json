@@ -1,0 +1,32 @@
+{
+  "name": "web-minesweeping",
+  "version": "1.0.0",
+  "description": "a web version minesweeping\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[Cminesweeping game",
+  "main": "main.js",
+  "scripts": {
+    "build": "webpack",
+    "server": "webpack-dev-server --open"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/franose371/web-minesweeping.git"
+  },
+  "author": "franose",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/franose371/web-minesweeping/issues"
+  },
+  "homepage": "https://github.com/franose371/web-minesweeping#readme",
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+    "css-loader": "^0.28.7",
+    "file-loader": "^0.11.2",
+    "style-loader": "^0.18.2",
+    "webpack": "^3.6.0",
+    "webpack-dev-server": "^2.8.2"
+  }
+}
