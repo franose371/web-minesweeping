@@ -328,10 +328,7 @@ MineSweeping.handleSingleClick = function (event, self) {
 							maskContext.drawImage(imgObjects[2], i.xIndex * block_width + 1, i.yIndex * block_height + 1, block_width - 2, block_height - 2);
 						} else if (cur.isFlaged) {
 							cur.isFlaged = false;
-							maskContext.fillStyle = "#c2c2c2";
-							maskContext.strokeStyle = 'white';
-							maskContext.fillRect(i.xIndex * block_width, i.yIndex * block_height, block_width, block_height);
-							maskContext.strokeRect(i.xIndex * block_width, i.yIndex * block_height, block_width, block_height);
+							MineSweeping.drawBlock(maskContext, "#c2c2c2", "white", i.xIndex * block_width, i.yIndex * block_height, block_width, block_height);
 						}
 						return false;
 					}
@@ -407,8 +404,6 @@ MineSweeping.createMask = function () {
 		}
 	}
 
-	var getPosition = this.getEventPosition;
-	var getMineIndex = this.getMineIndex;
 	var selfMine = this;
 
 	maskCanvas.addEventListener("mouseup", function (e) {
@@ -424,34 +419,25 @@ MineSweeping.createMask = function () {
 	}, false);
 };
 
+//生成计时器和开始按钮节点
 MineSweeping.createInfo = function () {
 	var mask = document.getElementById("maskCanvas");
 	var oInfo = document.createElement("div");
 	oInfo.id = "minesweeping-info-block";
+	oInfo.style.top = parseInt(mask.offsetTop) + panel_rows * block_height / 2 + 'px';
+
 	oTimer = document.createElement("div");
 	oTimer.id = "minesweeping-info-timer";
 	oTimer.innerHTML = "000";
-	oTimer.style.width = "50px";
-	oTimer.style.height = '20px';
-	oTimer.style.backgroundColor = 'black';
-	oTimer.style.color = 'red';
-	oTimer.style.textAlign = 'center';
-	oTimer.style.marginBottom = '20px';
 
 	var oButton = document.createElement("button");
 	oButton.id = "minesweeping-info-button";
 	oButton.innerHTML = "start";
-	oButton.style.width = "50px";
-	oButton.style.height = '20px';
-	oButton.style.backgroundColor = 'gray';
-	oButton.style.color = 'white';
-	oButton.style.textAlign = 'center';
 
 	oInfo.appendChild(oTimer);
 	oInfo.appendChild(oButton);
 	document.body.insertBefore(oInfo, mask);
-	oInfo.style.position = 'absolute';
-	oInfo.style.top = parseInt(mask.style.top) + panel_rows * block_height / 2 + 'px';
+
 	oButton.addEventListener("click", function () {
 		MineSweeping.init();
 		MineSweeping.setTimer(true);
@@ -568,7 +554,6 @@ function createData(firstClick, panel_columns, panel_rows, mine_num) {
 	for (var i = 0, length1 = mines.length; i < length1; i++) {
 		mines[i] = new Array(panel_rows);
 	}
-
 	for (var _i = 0, length = mines.length; _i < length; _i++) {
 		for (var _j = 0, length2 = mines[_i].length; _j < length2; _j++) {
 			mines[_i][_j] = new _Mineblock.Mineblock(_i, _j);
@@ -683,7 +668,7 @@ exports = module.exports = __webpack_require__(9)(undefined);
 
 
 // module
-exports.push([module.i, "#mineCanvas {\r\n\tmargin: auto;\r\n\tborder: 1px solid #aaa;\r\n\tposition: absolute;\r\n\tz-index: 98;\r\n\tleft: 100px;\r\n\ttop: 100px;\r\n}\r\n\r\n#maskCanvas {\r\n\tmargin: auto;\r\n\tborder: 1px solid #aaa;\r\n\tposition: absolute;\r\n\tz-index: 99;\r\n\tleft: 100px;\r\n\ttop: 100px;\r\n}", ""]);
+exports.push([module.i, "#mineCanvas {\r\n\tmargin: auto;\r\n\tborder: 1px solid #aaa;\r\n\tposition: absolute;\r\n\tz-index: 98;\r\n\tleft: 100px;\r\n\ttop: 100px;\r\n}\r\n\r\n#maskCanvas {\r\n\tmargin: auto;\r\n\tborder: 1px solid #aaa;\r\n\tposition: absolute;\r\n\tz-index: 99;\r\n\tleft: 100px;\r\n\ttop: 100px;\r\n}\r\n\r\n#minesweeping-info-block {\r\n\tposition: absolute;\r\n}\r\n\r\n#minesweeping-info-timer {\r\n\twidth: 50px;\r\n\theight: 20px;\r\n\tbackground-color: black;\r\n\tcolor: red;\r\n\ttext-align: center;\r\n\tmargin-bottom: 20px;\r\n}\r\n\r\n#minesweeping-info-button {\r\n\twidth: 50px;\r\n\theight: 20px;\r\n\tbackground-color: gray;\r\n\tcolor: white;\r\n\ttext-align: center;\r\n}", ""]);
 
 // exports
 

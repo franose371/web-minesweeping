@@ -337,6 +337,8 @@ MineSweeping.createInfo = function() {
 	var mask = document.getElementById("maskCanvas");
 	var oInfo = document.createElement("div");
 	oInfo.id = "minesweeping-info-block";
+	oInfo.style.top = parseInt(mask.offsetTop) + (panel_rows * block_height) / 2 + 'px';
+
 	oTimer = document.createElement("div");
 	oTimer.id = "minesweeping-info-timer";
 	oTimer.innerHTML = "000";
@@ -348,7 +350,7 @@ MineSweeping.createInfo = function() {
 	oInfo.appendChild(oTimer);
 	oInfo.appendChild(oButton);
 	document.body.insertBefore(oInfo, mask);
-	oInfo.style.top = parseInt(mask.offsetTop) + (panel_rows * block_height) / 2 + 'px';
+
 	oButton.addEventListener("click", function() {
 		MineSweeping.init();
 		MineSweeping.setTimer(true);
