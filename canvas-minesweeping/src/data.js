@@ -2,7 +2,8 @@ import {
 	Mineblock
 } from './Mineblock'
 import {
-	isOutRange
+	isOutRange,
+	mines
 } from './index'
 
 function createData(firstClick, panel_columns, panel_rows, mine_num) {
@@ -60,8 +61,71 @@ function createData(firstClick, panel_columns, panel_rows, mine_num) {
 	return mines;
 }
 
-
+var game = {
+	//清除当前点击块周围的块
+	arr: [],
+	isGameLose: false,
+	loop: function(col, row, arr) {
+		for (var k = -1; k < 2; k++) {
+			for (var l = -1; l < 2; l++) {
+				if (!isOutRange(col + l, row + k)) {
+					let cur = mines[col + l][row + k];
+					if (!cur.isClicked) {
+						if (!cur.isFlaged) {
+							arr.push({
+								columns: col + l,
+								rows: row + k
+							});
+							mines[col + l][row + k].isClicked = true;
+						}
+						if (cur.roundMines === 0) {
+							this.loop(col + l, row + k, arr);
+						}
+					}
+				}
+			}
+		}
+	},
+	cleanArea: function(columns, rows, cleanArr) {
+		this.loop(columns, rows, cleanArr);
+		this.arr = cleanArr;
+		if (cleanArr.length > 0) {
+			return cleanArr;
+		}
+	},
+	getWronged: function(arr) {
+		var wrongedIndex = [];
+		arr.map((item) => {
+			var cur = mines[item.columns][item.rows];
+			if (cur.isClicked && cur.isMined && !cur.isFlaged) {
+				wrongedIndex.push({
+					xIndex: item.columns,
+					yIndex: item.rows
+				});
+			}
+		});
+		if (wrongedIndex.length > 0) {
+			this.isGameLose = true;
+			return wrongedIndex;
+		} else {
+			this.isGameLose = false;
+			return wrongedIndex;
+		}
+	},
+	getFlaged: function(col, row) {
+		var flagNum = 0;
+		if (mines[col][row].isClicked) {
+			[-1, 0, 1].map((rows) => {
+				[-1, 0, 1].map((cols) => {
+					!isOutRange(col + cols, row + rows) ? (mines[col + cols][row + rows].isFlaged ? flagNum++ : flagNum) : flagNum;
+				});
+			});
+		}
+		return flagNum;
+	}
+}
 
 export {
-	createData
+	createData,
+	game
 }

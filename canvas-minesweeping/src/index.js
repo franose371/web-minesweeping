@@ -4,37 +4,34 @@ import flag from './images/flag.jpg'
 import config from './config.json'
 import {
 	createData,
+	game
 } from './data'
 import './style.css'
 
+const BLOCK_WIDTH = 20,
+	BLOCK_HEIGHT = 20,
+	oTimer = document.createElement("div"),
+	maskCanvas = document.createElement("canvas"),
+	mineCanvas = document.createElement("canvas");
 
-var MineSweeping = {},
-	mine_num,
-	block_width = 20,
-	block_height = 20,
+var mine_num,
 	panel_columns,
 	panel_rows,
 	mines = [],
-	cleanArr = [],
 	count = 0,
 	timeCount,
 	firstClick = [],
 	flagContext,
 	maskContext,
-	maskCanvas,
-	mineCanvas,
 	mineContext,
-	oTimer,
 	myTime,
 	isMouseDown = false,
 	isDoubleMouseDown = false,
-	isGameLose = false,
 	wrongedMineIndex = [],
 	imgObjects = [];
 
-
 //图片预加载
-MineSweeping.loadImage = function(imgList) {
+function loadImage(imgList) {
 	var count = 0;
 	for (var i = 0, length1 = imgList.length; i < length1; i++) {
 		window['img' + i] = new Image();
@@ -46,9 +43,9 @@ MineSweeping.loadImage = function(imgList) {
 		}(i);
 	}
 	return count === imgList.length ? true : false;
-};
+}
 
-MineSweeping.setTimer = function(isFinished) {
+function setTimer(isFinished) {
 	var timeText;
 
 	function settime() {
@@ -64,222 +61,192 @@ MineSweeping.setTimer = function(isFinished) {
 	}
 
 	!isFinished ? myTime = setInterval(settime, 1000) : clearInterval(myTime);
-};
-MineSweeping.setMineNum = function(level) {
+}
+
+function setMineNum(level) {
 	if (level) {
 		var curLevel = config[level];
 		mine_num = curLevel["mine_num"];
 		panel_rows = curLevel["panel_rows"];
 		panel_columns = curLevel["panel_columns"];
 	}
-};
+}
 
 //清除遮罩层
-MineSweeping.cleanMask = function(columns, rows) {
-	maskContext.clearRect(0, 0, panel_columns * block_width, panel_rows * block_height);
-	mineContext.drawImage(imgObjects[1], columns * block_width + 1, rows * block_height + 1, block_width - 2, block_height - 2);
+function cleanMask(columns, rows) {
+	maskContext.clearRect(0, 0, panel_columns * BLOCK_WIDTH, panel_rows * BLOCK_HEIGHT);
+	mineContext.drawImage(imgObjects[1], columns * BLOCK_WIDTH + 1, rows * BLOCK_HEIGHT + 1, BLOCK_WIDTH - 2, BLOCK_HEIGHT - 2);
 	maskCanvas.remove();
-	MineSweeping.setTimer(true);
-};
-//清除当前点击块周围的块
-MineSweeping.cleanArea = function(columns, rows, mineObject) {
-	for (var k = -1; k < 2; k++) {
-		for (var l = -1; l < 2; l++) {
-			if (!this.isOutRange(columns + l, rows + k)) {
-				var cur = mines[columns + l][rows + k];
-				if (!cur.isClicked) {
-					if (cur.isFlaged === false) {
-						cleanArr.push({
-							columns: columns + l,
-							rows: rows + k
-						});
-						cur.isClicked = true;
-						count++;
-					}
-					if (cur.isClicked && cur.isMined && !cur.isFlaged) {
-						var cur = mines[columns + l][rows + k];
-						isGameLose = true;
-						wrongedMineIndex.push({
-							xIndex: columns + l,
-							yIndex: rows + k
-						});
-					}
-					if (cur.roundMines === 0) {
-						var cur = mines[columns + l][rows + k];
-						mineObject.cleanArea(columns + l, rows + k, mineObject);
-					}
-				}
-			}
-		}
-	}
-};
+	setTimer(true);
+}
+
 
 //得到当前索引
-MineSweeping.getMineIndex = function(x, y, mineObject) {
-	if (x > 0 && y > 0 && x < panel_columns * block_width - 1 && y < panel_rows < panel_rows * block_height - 1) {
-		var xIndex = Math.floor(x / block_width);
-		var yIndex = Math.floor(y / block_height);
-		return {
-			xIndex: xIndex,
-			yIndex: yIndex
-		};
-	} else {
-		return false;
-	}
-};
+function getMineIndex(x, y) {
+	return x > 0 && y > 0 && x < panel_columns * BLOCK_WIDTH - 1 && y < panel_rows < panel_rows * BLOCK_HEIGHT - 1 ? {
+		xIndex: Math.floor(x / BLOCK_WIDTH),
+		yIndex: Math.floor(y / BLOCK_HEIGHT)
+	} : false;
+}
 
-MineSweeping.getEventPosition = function(ev, parentEle) {
-	var x, y;
-	x = ev.clientX - parseInt(maskCanvas.offsetLeft);
-	y = ev.clientY - parseInt(maskCanvas.offsetTop);
+//得到当前鼠标在面板上的偏移
+function getEventPosition(ev) {
 	return {
-		x: x,
-		y: y
+		x: ev.clientX - parseInt(maskCanvas.offsetLeft),
+		y: ev.clientY - parseInt(maskCanvas.offsetTop)
 	};
-};
+}
 
-MineSweeping.handleClick = function(e, self) {
-	var p = self.getEventPosition(e, maskCanvas);
-	var i = self.getMineIndex(p.x, p.y, self);
+function handleClick(e) {
 	if (e.type === "mouseup") {
-		isDoubleMouseDown ? MineSweeping.handleDoubleClick(e, self) : MineSweeping.handleSingleClick(e, self);
+		isDoubleMouseDown ? handleDoubleClick(e) : handleSingleClick(e);
 	}
-};
+}
 
 //左右键同时按下
-MineSweeping.handleDoubleClick = function(event, self) {
-	var p = self.getEventPosition(event, maskCanvas);
-	var i = self.getMineIndex(p.x, p.y, self);
-	var flagNum = 0;
-	var columns = i.xIndex;
-	var rows = i.yIndex;
-	var cur = mines[i.xIndex][i.yIndex];
-	if (cur.isClicked) {
-		for (var k = -1; k < 2; k++) {
-			for (var l = -1; l < 2; l++) {
-				if (!this.isOutRange(columns + l, rows + k)) {
-					if (mines[columns + l][rows + k].isFlaged) {
-						flagNum++;
+function handleDoubleClick(event) {
+	if (mines.length > 0) {
+		var p = getEventPosition(event, maskCanvas);
+		var i = getMineIndex(p.x, p.y);
+		var columns = i.xIndex;
+		var rows = i.yIndex;
+		var cur = mines[i.xIndex][i.yIndex];
+		if (cur.isClicked) {
+			var flagNum = game.getFlaged(columns, rows);
+			if (flagNum === cur.roundMines) {
+				var cleanArr = game.cleanArea(i.xIndex, i.yIndex, []);
+				if (cleanArr) {
+					cleanArr.map((item) => {
+						mines[item.columns][item.rows].isClicked = true;
+					});
+					count += cleanArr.length;
+					wrongedMineIndex = game.getWronged(cleanArr);
+					var isGameLose = game.isGameLose;
+					for (var i = 0, length1 = cleanArr.length; i < length1; i++) {
+						clearBlock(cleanArr[i].columns, cleanArr[i].rows, -1, -1);
 					}
 				}
 			}
-		}
-		if (flagNum === cur.roundMines) {
-			MineSweeping.cleanArea(i.xIndex, i.yIndex, self);
-			for (var i = 0, length1 = cleanArr.length; i < length1; i++) {
-				MineSweeping.clearBlock(cleanArr[i].columns, cleanArr[i].rows, -1, -1);
+			if (isGameLose) {
+				cleanMask(wrongedMineIndex[0].xIndex, wrongedMineIndex[0].yIndex);
+			}
+			if (count === panel_columns * panel_rows - mine_num) {
+				cleanMask();
+				setTimer(true);
+				alert("you win! time:" + parseInt(oTimer.innerHTML) + "s");
 			}
 		}
-		if (isGameLose === true) {
-			MineSweeping.cleanMask(wrongedMineIndex[0].xIndex, wrongedMineIndex[0].yIndex);
+		isMouseDown = false;
+		isDoubleMouseDown = false;
+	}
+}
+
+function clearBlock(column, row, xOffSet, yOffSet) {
+	maskContext.clearRect(column * BLOCK_WIDTH, row * BLOCK_HEIGHT, BLOCK_WIDTH + xOffSet, BLOCK_HEIGHT + yOffSet);
+}
+
+function handleRightClick(p, i) {
+	var cur = mines[i.xIndex][i.yIndex];
+	if (i && count !== 0 && !cur.isClicked) {
+		if (!cur.isFlaged) {
+			cur.isFlaged = true;
+			maskContext.drawImage(imgObjects[2], i.xIndex * BLOCK_WIDTH + 1, i.yIndex * BLOCK_HEIGHT + 1, BLOCK_WIDTH - 2, BLOCK_HEIGHT - 2);
+		} else if (cur.isFlaged) {
+			cur.isFlaged = false;
+			drawBlock(maskContext, "#c2c2c2", "white", i.xIndex * BLOCK_WIDTH, i.yIndex * BLOCK_HEIGHT, BLOCK_WIDTH, BLOCK_HEIGHT);
 		}
+		return false;
+	}
+}
+
+//左键按下
+function handleLeftClick(p, i) {
+	var cur = mines[i.xIndex][i.yIndex];
+	if (!cur.isFlaged) {
+		clearBlock(i.xIndex, i.yIndex, -1, -1);
+		//当前块被点击时，isClicked改为true
+		if (!cur.isClicked && !cur.isMined) {
+			cur.isClicked = true;
+			count++;
+		}
+		//胜利的条件
 		if (count === panel_columns * panel_rows - mine_num) {
-			MineSweeping.cleanMask();
-			self.setTimer(true);
+			maskContext.clearRect(0, 0, panel_columns * BLOCK_WIDTH, panel_rows * BLOCK_HEIGHT);
+			maskCanvas.remove();
+			setTimer(true);
 			alert("you win! time:" + parseInt(oTimer.innerHTML) + "s");
 		}
+		//点击到雷时
+		if (cur.isMined && !cur.isClicked) {
+			cleanMask(i.xIndex, i.yIndex);
+		} else if (cur.roundMines === 0 && !cur.isMined) {
+			var cleanArr = game.cleanArea(i.xIndex, i.yIndex, []);
+			if (cleanArr) {
+				count += cleanArr.length;
+				for (var i = 0, length1 = cleanArr.length; i < length1; i++) {
+					clearBlock(cleanArr[i].columns, cleanArr[i].rows, -1, -1)
+				}
+				if (count === panel_columns * panel_rows - mine_num) {
+					maskContext.clearRect(0, 0, panel_columns * BLOCK_WIDTH, panel_rows * BLOCK_HEIGHT);
+					maskCanvas.remove();
+					alert("you win! time: " + parseInt(oTimer.innerHTML) + "s");
+				}
+			}
+		}
 	}
-	isMouseDown = false;
-	isDoubleMouseDown = false;
-};
-MineSweeping.clearBlock = function(column, row, xOffSet, yOffSet) {
-	maskContext.clearRect(column * block_width, row * block_height, block_width + xOffSet, block_height + yOffSet);
-};
+}
+
 //只有一个键被按下
-MineSweeping.handleSingleClick = function(event, self) {
-	var p = self.getEventPosition(event, maskCanvas);
-	var i = self.getMineIndex(p.x, p.y, self);
-	//左键点击事件
+function handleSingleClick(event) {
+	var p = getEventPosition(event, maskCanvas);
+	var i = getMineIndex(p.x, p.y);
 	if (maskCanvas && i) {
 		if (event.button === 0) {
 			if (count === 0) {
 				//第一次点击时，生成雷
 				firstClick.push(i.xIndex);
 				firstClick.push(i.yIndex);
-				self.createMines(firstClick);
-				self.setTimer(false);
+				createMines(firstClick);
+				setTimer(false);
 			}
-			var cur = mines[i.xIndex][i.yIndex];
-			if (!cur.isFlaged) {
-				MineSweeping.clearBlock(i.xIndex, i.yIndex, -1, -1);
-				//当前块被点击时，isClicked改为true
-				if (!cur.isClicked && !cur.isMined) {
-					cur.isClicked = true;
-					count++;
-				}
-				//胜利的条件
-				if (count === panel_columns * panel_rows - mine_num) {
-					maskContext.clearRect(0, 0, panel_columns * block_width, panel_rows * block_height);
-					maskCanvas.remove();
-					self.setTimer(true);
-					alert("you win! time:" + parseInt(oTimer.innerHTML) + "s");
-				}
-				//点击到雷时
-				if (cur.isMined && !cur.isClicked) {
-					MineSweeping.cleanMask(i.xIndex, i.yIndex);
-				} else if (cur.roundMines === 0 && !cur.isMined) {
-					self.cleanArea(i.xIndex, i.yIndex, self);
-					for (var i = 0, length1 = cleanArr.length; i < length1; i++) {
-						MineSweeping.clearBlock(cleanArr[i].columns, cleanArr[i].rows, -1, -1)
-					}
-					if (count === panel_columns * panel_rows - mine_num) {
-						maskContext.clearRect(0, 0, panel_columns * block_width, panel_rows * block_height);
-						maskCanvas.remove();
-						alert("you win! time: " + parseInt(oTimer.innerHTML) + "s");
-					}
-				}
-			}
-		}
-		//右键点击事件 
-		else if (event.button === 2) {
-			var cur = mines[i.xIndex][i.yIndex];
-			if (i && count !== 0) {
-				if (!cur.isClicked) {
-					if (!cur.isFlaged) {
-						cur.isFlaged = true;
-						maskContext.drawImage(imgObjects[2], i.xIndex * block_width + 1, i.yIndex * block_height + 1, block_width - 2, block_height - 2);
-					} else if (cur.isFlaged) {
-						cur.isFlaged = false;
-						MineSweeping.drawBlock(maskContext, "#c2c2c2", "white", i.xIndex * block_width, i.yIndex * block_height, block_width, block_height);
-					}
-					return false;
-				}
-			}
+			handleLeftClick(p, i);
+		} else if (event.button === 2) {
+			handleRightClick(p, i);
 		}
 	}
 
-};
+}
 
-MineSweeping.drawText = function(color, column, row) {
+function drawText(color, column, row) {
 	mineContext.fillStyle = color;
-	mineContext.fillText(mines[column][row].roundMines, mines[column][row].columns * block_width + 10, mines[column][row].rows * block_height + 15);
-};
+	mineContext.fillText(mines[column][row].roundMines, mines[column][row].columns * BLOCK_WIDTH + 10, mines[column][row].rows * BLOCK_HEIGHT + 15);
+}
 
-MineSweeping.isOutRange = function(column, row) {
+function isOutRange(column, row) {
 	return (column > -1 && row > -1 && column < panel_columns && row < panel_rows) ? false : true;
-};
+}
 
-MineSweeping.drawBlock = function(context, fillColor, strokeColor, xPos, yPos, width, height) {
+function drawBlock(context, fillColor, strokeColor, xPos, yPos, width, height) {
 	context.fillStyle = fillColor;
 	context.strokeStyle = strokeColor;
 	context.fillRect(xPos, yPos, width, height);
 	context.strokeRect(xPos, yPos, width, height);
-};
+}
 
-MineSweeping.createMines = function(firstClick) {
+function createMines(firstClick) {
 	//创造地雷层的canvas
-	mineCanvas = document.createElement("canvas");
+
 	mineCanvas.id = "mineCanvas";
-	mineCanvas.width = panel_columns * block_width;
-	mineCanvas.height = panel_rows * block_height;
+	mineCanvas.width = panel_columns * BLOCK_WIDTH;
+	mineCanvas.height = panel_rows * BLOCK_HEIGHT;
 	document.body.appendChild(mineCanvas);
 
 	mineCanvas.getContext("2d") ? mineContext = mineCanvas.getContext("2d") : alert("浏览器不兼容");
 
 	//背景填充
-	for (var x = 0; x < panel_columns * block_width; x = x + block_width) {
-		for (var y = 0; y < panel_rows * block_height; y = y + block_height) {
-			MineSweeping.drawBlock(mineContext, '#D3D3D3', 'white', x, y, block_width, block_height);
+	for (var x = 0; x < panel_columns * BLOCK_WIDTH; x = x + BLOCK_WIDTH) {
+		for (var y = 0; y < panel_rows * BLOCK_HEIGHT; y = y + BLOCK_HEIGHT) {
+			drawBlock(mineContext, '#D3D3D3', 'white', x, y, BLOCK_WIDTH, BLOCK_HEIGHT);
 		}
 	}
 
@@ -288,7 +255,7 @@ MineSweeping.createMines = function(firstClick) {
 	for (let i = 0, length1 = mines.length; i < length1; i++) {
 		for (let j = 0, length2 = mines[i].length; j < length2; j++) {
 			if (mines[i][j].isMined === true) {
-				mineContext.drawImage(imgObjects[0], mines[i][j].columns * block_width, mines[i][j].rows * block_height);
+				mineContext.drawImage(imgObjects[0], mines[i][j].columns * BLOCK_WIDTH, mines[i][j].rows * BLOCK_HEIGHT);
 			}
 			if (mines[i][j].roundMines !== 0 && !mines[i][j].isMined) {
 				//绘制不同颜色的数字
@@ -296,50 +263,50 @@ MineSweeping.createMines = function(firstClick) {
 				mineContext.textAlign = 'center';
 				const color = ["blue", "green", "red", "#4B0082", "#A0522D", "#00CED1", "black", "gray"];
 				let textColor = color[mines[i][j].roundMines - 1]
-				MineSweeping.drawText(textColor, i, j);
+				drawText(textColor, i, j);
 			}
 		}
 	}
-};
-MineSweeping.createMask = function() {
-	maskCanvas = document.createElement("canvas");
+}
+
+//创建遮罩层
+function createMask() {
 	maskCanvas.id = "maskCanvas";
-	maskCanvas.width = panel_columns * block_width;
-	maskCanvas.height = panel_rows * block_height;
+	maskCanvas.width = panel_columns * BLOCK_WIDTH;
+	maskCanvas.height = panel_rows * BLOCK_HEIGHT;
 
 	document.body.appendChild(maskCanvas);
 
 	maskCanvas.getContext("2d") ? maskContext = maskCanvas.getContext("2d") : alert("浏览器不兼容");
 
-	for (var x = 0; x < panel_columns * block_width; x = x + block_width) {
-		for (var y = 0; y < panel_rows * block_height; y = y + block_height) {
-			MineSweeping.drawBlock(maskContext, '#c2c2c2', 'white', x, y, block_width, block_height);
+	for (var x = 0; x < panel_columns * BLOCK_WIDTH; x = x + BLOCK_WIDTH) {
+		for (var y = 0; y < panel_rows * BLOCK_HEIGHT; y = y + BLOCK_HEIGHT) {
+			drawBlock(maskContext, '#c2c2c2', 'white', x, y, BLOCK_WIDTH, BLOCK_HEIGHT);
 		}
 	}
+}
 
-	var selfMine = this;
+maskCanvas.addEventListener("mouseup", function(e) {
+	isMouseDown = false;
+	handleClick(e);
+}, false);
+maskCanvas.addEventListener("mousedown", function(e) {
+	if (isMouseDown) {
+		isDoubleMouseDown = true;
+	} else {
+		isMouseDown = true;
+	}
+}, false);
 
-	maskCanvas.addEventListener("mouseup", function(e) {
-		isMouseDown = false;
-		selfMine.handleClick(e, selfMine);
-	}, false);
-	maskCanvas.addEventListener("mousedown", function(e) {
-		if (isMouseDown) {
-			isDoubleMouseDown = true;
-		} else {
-			isMouseDown = true;
-		}
-	}, false);
-};
+
 
 //生成计时器和开始按钮节点
-MineSweeping.createInfo = function() {
+function createInfo() {
 	var mask = document.getElementById("maskCanvas");
 	var oInfo = document.createElement("div");
 	oInfo.id = "minesweeping-info-block";
-	oInfo.style.top = parseInt(mask.offsetTop) + (panel_rows * block_height) / 2 + 'px';
+	oInfo.style.top = parseInt(mask.offsetTop) + (panel_rows * BLOCK_HEIGHT) / 2 + 'px';
 
-	oTimer = document.createElement("div");
 	oTimer.id = "minesweeping-info-timer";
 	oTimer.innerHTML = "000";
 
@@ -352,12 +319,12 @@ MineSweeping.createInfo = function() {
 	document.body.insertBefore(oInfo, mask);
 
 	oButton.addEventListener("click", function() {
-		MineSweeping.init();
-		MineSweeping.setTimer(true);
+		init();
+		setTimer(true);
 	}, false);
 };
 
-MineSweeping.init = function(level) {
+function init(level) {
 	if (document.getElementById("maskCanvas")) {
 		document.getElementById("maskCanvas").remove();
 	}
@@ -368,27 +335,27 @@ MineSweeping.init = function(level) {
 		document.getElementById("minesweeping-info-block").remove();
 	}
 	mines = [];
-	cleanArr = [];
 	count = 0;
 	timeCount = 0;
 	firstClick = [];
-	isGameLose = false;
 	wrongedMineIndex = [];
-	MineSweeping.setTimer(true);
+	isDoubleMouseDown = false;
+	isMouseDown = false;
+	setTimer(true);
 	//预加载图片
-	MineSweeping.loadImage([bomb, bomb0, flag]);
+	loadImage([bomb, bomb0, flag]);
 	//禁止右键事件
 	document.oncontextmenu = function(e) {
 		return false;
 	}
-	this.setMineNum(level);
-	this.createMask();
-	this.createInfo();
-};
+	setMineNum(level);
+	createMask();
+	createInfo();
+}
 
-MineSweeping.setLevel = function() {
+function setLevel() {
 	//默认显示初级扫雷
-	MineSweeping.init("beginner");
+	init("beginner");
 	var oInfo = document.createElement("span");
 	oInfo.innerHTML = "请选择难度：";
 	var oSel = document.createElement("select");
@@ -410,18 +377,15 @@ MineSweeping.setLevel = function() {
 	oSel.addEventListener("change", function(e) {
 		e = e || window.event;
 		var target = e.target || e.srcElement;
-		MineSweeping.init(target.value);
+		init(target.value);
 	}, false);
 
 
 }
 
-MineSweeping.setLevel();
-
-//window.MineSweeping = MineSweeping;
-
-const isOutRange = MineSweeping.isOutRange;
+setLevel();
 
 export {
-	isOutRange
+	isOutRange,
+	mines
 }
